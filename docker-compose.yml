@@ -1,0 +1,42 @@
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - wordpress-network
+    ports:
+      - "3306:3306"
+
+  wordpress:
+    image: wordpress:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./luftdaten-wp:/var/www/html/wp-content/themes/luftdaten-wp
+    networks:
+      - wordpress-network
+    ports:
+      - "8080:80"
+
+volumes:
+  db_data:
+  wordpress_data:
+
+networks:
+  wordpress-network:
+    driver: bridge
+
