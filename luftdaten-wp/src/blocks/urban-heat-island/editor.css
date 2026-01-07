@@ -1,0 +1,12 @@
+.luftdaten-urban-heat-island-block {
+    padding: 20px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+}
+
+.luftdaten-urban-heat-island-preview h2 {
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+

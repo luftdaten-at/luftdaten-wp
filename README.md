@@ -15,7 +15,7 @@ A Docker Compose setup for WordPress theme development with MariaDB.
    ```
 
 2. **Access WordPress:**
-   - Open your browser and navigate to: `http://localhost:8080`
+   - Open your browser and navigate to: `http://localhost`
    - Follow the WordPress installation wizard
 
 3. **Stop the containers:**

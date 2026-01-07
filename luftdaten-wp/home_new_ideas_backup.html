@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Luftqualität + Hitze/UHI + Anpassung – Dashboard (Wireframe)</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#0f1522;
+      --card:#121a2a;
+      --text:#e6edf3;
+      --muted:#9aa4b2;
+      --border:#243041;
+      --accent:#4aa3ff;
+      --good:#56f39a;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:linear-gradient(180deg, #0f1522 0%, #0b0f14 30%);
+      color:var(--text);
+      scroll-behavior: smooth;
+    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:22px 16px 44px; }
+    header{
+      display:flex; gap:18px; align-items:flex-start; justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .title h1{ margin:0; font-size:20px; letter-spacing:.2px; }
+    .title .sub{ margin-top:6px; color:var(--muted); font-size:13px; line-height:1.35; }
+    .meta{
+      text-align:right; color:var(--muted); font-size:12px; line-height:1.4;
+      border:1px solid var(--border); background:rgba(18,26,42,.45);
+      padding:10px 12px; border-radius:14px;
+    }
+
+    .bullets{
+      background:rgba(18,26,42,.45);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px 14px 10px;
+      margin:10px 0 14px;
+      transition: border-color 0.3s ease;
+    }
+    .bullets:hover{
+      border-color: var(--accent);
+    }
+    .bullets ul{ margin:0; padding-left:18px; }
+    .bullets li{ margin:8px 0; }
+    .bullets li span{ color:var(--muted); }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap:10px;
+      margin:12px 0 16px;
+    }
+    .kpi{
+      background:rgba(18,26,42,.55);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .kpi:hover{
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(74, 163, 255, 0.2);
+    }
+    .kpi:focus-visible{
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    .kpi .label{ color:var(--muted); font-size:12px; }
+    .kpi .value{ margin-top:6px; font-size:22px; letter-spacing:.2px; }
+    .kpi .note{ margin-top:6px; color:var(--muted); font-size:11px; line-height:1.35; }
+
+    .section{
+      margin-top:14px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:rgba(18,26,42,.35);
+      overflow:hidden;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards;
+    }
+    .section:hover{
+      border-color: var(--border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    @keyframes fadeIn{
+      from{ opacity: 0; transform: translateY(20px); }
+      to{ opacity: 1; transform: translateY(0); }
+    }
+    .section:nth-child(1){ animation-delay: 0.1s; }
+    .section:nth-child(2){ animation-delay: 0.2s; }
+    .section:nth-child(3){ animation-delay: 0.3s; }
+    .section:nth-child(4){ animation-delay: 0.4s; }
+    .section:nth-child(5){ animation-delay: 0.5s; }
+    .sectionHead{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap:16px;
+      padding:14px 14px 10px;
+      border-bottom:1px solid var(--border);
+      background:rgba(15,21,34,.55);
+    }
+    .sectionHead h2{ margin:0; font-size:14px; }
+    .sectionHead .takeaway{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+      max-width:560px;
+      text-align:right;
+    }
+    .sectionBody{ padding:12px 14px 14px; }
+
+    .bigNumberRow{
+      display:grid;
+      grid-template-columns: 1fr 2fr;
+      gap:12px;
+      align-items:stretch;
+      margin-bottom:10px;
+    }
+    .bigNumber{
+      background:rgba(11,18,32,.7);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px;
+    }
+    .pill{
+      border:1px solid var(--border);
+      background:rgba(15,21,34,.65);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      color:var(--muted);
+      display:inline-block;
+      transition: all 0.2s ease;
+    }
+    .pill:hover{
+      background:rgba(15,21,34,.85);
+      transform: scale(1.05);
+    }
+    .bigNumber .num{ font-size:28px; margin-top:6px; }
+    .bigNumber .desc{ color:var(--muted); font-size:11px; margin-top:8px; line-height:1.35; }
+
+    .chart{
+      width:100%;
+      height:320px;
+      background:rgba(11,18,32,.55);
+      border:1px solid var(--border);
+      border-radius:16px;
+      overflow:hidden;
+      position:relative;
+      transition: border-color 0.3s ease;
+    }
+    .chart:hover{
+      border-color: var(--accent);
+    }
+    .chart.small{ height:260px; }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:10px;
+    }
+
+    .sourceLine{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.35;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .facts{
+      margin-top:16px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:rgba(18,26,42,.35);
+      padding:14px;
+    }
+    .facts h3{ margin:0 0 10px 0; font-size:13px; }
+    .factsGrid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(260px, 1fr));
+      gap:10px;
+    }
+    .factCard{
+      background:rgba(11,18,32,.55);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px;
+      transition: all 0.3s ease;
+    }
+    .factCard:hover{
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(74, 163, 255, 0.15);
+    }
+    .factCard .t{ font-size:12px; }
+    .factCard .v{ font-size:18px; margin-top:8px; }
+    .factCard .s{ color:var(--muted); font-size:11px; margin-top:8px; line-height:1.35; }
+
+    footer{
+      margin-top:18px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.5;
+      padding:6px 2px 0;
+    }
+
+    @media (max-width: 980px){
+      header{ flex-direction:column; align-items:stretch; }
+      .meta{ text-align:left; }
+      .kpis{ grid-template-columns: repeat(2, 1fr); }
+      .bigNumberRow{ grid-template-columns: 1fr; }
+      .sectionHead{ flex-direction:column; align-items:flex-start; }
+      .sectionHead .takeaway{ text-align:left; max-width:none; }
+      .factsGrid{ grid-template-columns: 1fr; }
+      .grid2{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>Luftqualität, Hitzeinsel & Klimawandelanpassung in Österreich</h1>
+        <div class="sub">
+          Wireframe: kurze Kernaussagen + eine Grafik pro Thema + Quellenzeile.
+          Aufbau inspiriert vom „Klimadashboard“-Erzählstil (nicht funktional kopiert).
+        </div>
+      </div>
+      <div class="meta">
+        <div id="lastUpdated">Datenstand: —</div>
+        <div class="pill">Modus: Mock-Daten (API später)</div>
+      </div>
+    </header>
+
+    <div class="bullets">
+      <ul>
+        <li><b>Luftqualität</b>: Langfristige Belastung (PM₂.₅) vs. Episoden (O₃, PM₁₀). <span>Hier: Trends & Episodentage.</span></li>
+        <li><b>Hitze/UHI</b>: Städte kühlen nachts schlechter aus. <span>Hier: Tropennächte & Stadt–Umland-Differenz.</span></li>
+        <li><b>Anpassung</b>: Maßnahmen können Hitze <i>und</i> Exposition gegenüber Luftschadstoffen senken. <span>Hier: Co-Benefits & Praxisbeispiele.</span></li>
+      </ul>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 2 — Ozon folgt der Hitze</h2>
+        <div class="takeaway" id="m2Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="m2Big">—</div>
+            <div class="desc">
+              Beispielmetrik: Zusammenhang Sommer-Tage (Tmax) ↔ Tagesmaximum O₃.
+              In Produktion: definieren (Sommerhalbjahr, Schwellen, Stations-/Regionalaggregation).
+            </div>
+          </div>
+          <div class="chart" id="m2Scatter"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: Ozon (UBA/EEA) + Temperatur (GeoSphere) — im Wireframe nicht live geladen.</div>
+          <div class="pill">x: Tmax (°C) · y: O₃ max (µg/m³)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 3 — Urban Heat Island: Nächte werden zum Problem</h2>
+        <div class="takeaway" id="m3Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="grid2">
+          <div>
+            <div class="pill">Tropennächte</div>
+            <div class="chart small" id="m3TropicalNights"></div>
+          </div>
+          <div>
+            <div class="pill">UHI-Indikator</div>
+            <div class="chart small" id="m3UhiDelta"></div>
+          </div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: GeoSphere (Stations-/Indexdaten) — im Wireframe Mock.</div>
+          <div class="pill">Tropennächte: Tmin ≥ 20°C (Beispiel)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 4 — Doppelbelastung: Hitze + hohe Luftbelastung</h2>
+        <div class="takeaway" id="m4Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="m4Big">—</div>
+            <div class="desc">
+              Anzahl Tage pro Jahr, an denen „heiß“ <b>und</b> „Ozon hoch“ gleichzeitig auftreten.
+              In Produktion: Schwellen sauber dokumentieren.
+            </div>
+          </div>
+          <div class="chart" id="m4Bars"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: GeoSphere (Tmax) + UBA/EEA (O₃) — Wireframe Mock.</div>
+          <div class="pill">Einheit: Tage/Jahr</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>PM₂.₅ — Jahresmittel (Trend)</h2>
+        <div class="takeaway" id="pm25Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="pm25Big">—</div>
+            <div class="desc">
+              Jahresmittelwert (vereinfachte Aggregation) – im Wireframe über Messnetz gemittelt.
+              In Produktion: stations- vs. bevölkerungsgewichtet entscheiden.
+            </div>
+          </div>
+          <div class="chart" id="pm25Chart"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: UBA/EEA — Wireframe Mock.</div>
+          <div class="pill">Einheit: µg/m³</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>NO₂ — Verkehr vs. Hintergrund (Trend)</h2>
+        <div class="takeaway" id="no2Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="no2Big">—</div>
+            <div class="desc">
+              Vergleich zweier Stationsklassen (Verkehr/Hintergrund).
+              In Produktion: Stationsklassifikation aus Metadaten übernehmen.
+            </div>
+          </div>
+          <div class="chart" id="no2Chart"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: UBA/EEA — Wireframe Mock.</div>
+          <div class="pill">Einheit: µg/m³</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Ozon (O₃) — Episoden-Tage pro Jahr</h2>
+        <div class="takeaway" id="o3Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="o3Big">—</div>
+            <div class="desc">
+              Anzahl Tage pro Jahr über einer definierten Schwelle (Beispielmetrik).
+              In Produktion: Schwelle/Definition exakt angeben.
+            </div>
+          </div>
+          <div class="chart" id="o3Chart"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: UBA Ozonmessungen — Wireframe Mock.</div>
+          <div class="pill">Einheit: Tage/Jahr</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>PM₁₀ — Tage mit erhöhten Tagesmitteln</h2>
+        <div class="takeaway" id="pm10Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="pm10Big">—</div>
+            <div class="desc">
+              Episodentage sind leicht verständlich.
+              In Produktion: Grenzwert und zulässige Überschreitungen klar nennen.
+            </div>
+          </div>
+          <div class="chart" id="pm10Chart"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: UBA — Wireframe Mock.</div>
+          <div class="pill">Einheit: Tage/Jahr</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 5 — Klimawandelanpassung mit Co-Benefits für Luft & Hitze</h2>
+        <div class="takeaway" id="m5Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key idea</div>
+            <div class="num">„Doppelnutzen“</div>
+            <div class="desc">
+              Viele Anpassungsmaßnahmen senken Hitzeexposition und können Luftqualität indirekt verbessern.
+              Im Dashboard als qualitative Einordnung (nicht als Messwert).
+            </div>
+          </div>
+          <div class="chart" id="m5Cobenefits"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: Anpassungsstrategie / Hitzeschutz & Fachliteratur — Wireframe Mock.</div>
+          <div class="pill">Skala: niedrig · mittel · hoch (qualitativ)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 6 — Was Städte bereits tun (Beispiele)</h2>
+        <div class="takeaway">Kurz & konkret: Maßnahmen sind sichtbar und verständlich (Facts statt komplexer Grafiken).</div>
+      </div>
+      <div class="sectionBody">
+        <div class="factsGrid" id="m6Facts"></div>
+        <div class="sourceLine">
+          <div>Quelle: Stadtprogramme/Klimaanpassungspläne — im Wireframe Beispieltext.</div>
+          <div class="pill">Format: Facts / Links / Zuständigkeit</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="facts">
+      <h3>Orientierungswerte (Beispiel-Kasten)</h3>
+      <div class="factsGrid">
+        <div class="factCard">
+          <div class="t">PM₂.₅ – Jahresmittel</div>
+          <div class="v">EU heute: 25 · EU ab 2030: 10</div>
+          <div class="s">Werte in µg/m³. Als Kontext im Dashboard.</div>
+        </div>
+        <div class="factCard">
+          <div class="t">PM₁₀ – Tagesmittel</div>
+          <div class="v">EU heute: 50 (35 Tage) · EU ab 2030: 45 (18 Tage)</div>
+          <div class="s">Schwelle + zulässige Überschreitungen (Kontext).</div>
+        </div>
+        <div class="factCard">
+          <div class="t">NO₂ – Jahresmittel</div>
+          <div class="v">EU heute: 40 · EU ab 2030: 20</div>
+          <div class="s">Für Verkehrsnähe besonders relevant.</div>
+        </div>
+        <div class="factCard">
+          <div class="t">WHO-Richtwerte (strenger)</div>
+          <div class="v">z. B. PM₂.₅: 5 (Jahresmittel)</div>
+          <div class="s">Gesundheitliche Referenz (nicht rechtsverbindlich).</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Backend-Tipp: Liefere <b>jährliche Kennzahlen</b>, <b>Tagespaare (Tmax–O₃)</b>,
+      <b>UHI-Indikatoren</b> und <b>kombinierte Risiko-Tage</b> als JSON – dann bleibt das Frontend „nur D3“.
+    </footer>
+  </div>
+
+<script>
+  // --------------------------
+  // MOCK DATA (replace with fetch("/api/..."))
+  // --------------------------
+  const years = d3.range(2005, 2026);
+  const last = arr => arr[arr.length - 1];
+
+  function series(base, slope, noise=1.2, min=0){
+    let v = base;
+    return years.map((y,i) => {
+      v = Math.max(min, v + slope + (Math.random()-0.5)*noise);
+      return { year:y, value:+v.toFixed(1) };
+    });
+  }
+
+  const pm25_annual = series(14.5, -0.25, 1.1, 4);
+  const no2_traffic = series(48, -0.9, 2.4, 8);
+  const no2_background = series(22, -0.4, 1.5, 5);
+  const o3_episode_days = years.map((y,i)=>({ year:y, value: Math.max(0, Math.round(8 + 6*Math.sin(i/2.2) + (Math.random()-0.5)*6)) }));
+  const pm10_high_days  = years.map((y,i)=>({ year:y, value: Math.max(0, Math.round(22 + 5*Math.sin(i/1.9) + (Math.random()-0.5)*8)) }));
+
+  const m2_pairs = d3.range(180).map(i => {
+    const tmax = 20 + Math.random()*16;
+    const o3 = 80 + (tmax - 20) * (4 + Math.random()*2) + (Math.random()-0.5)*25;
+    return { tmax:+tmax.toFixed(1), o3:+o3.toFixed(1) };
+  });
+
+  const m3_tropical_nights_city = years.map((y,i)=>({ year:y, value: Math.max(0, Math.round(4 + 0.45*i + (Math.random()-0.5)*5)) }));
+  const m3_tropical_nights_rural = years.map((y,i)=>({ year:y, value: Math.max(0, Math.round(1 + 0.22*i + (Math.random()-0.5)*3)) }));
+  const m3_uhi_delta = years.map((y,i)=>({ year:y, value: +(0.8 + 0.03*i + (Math.random()-0.5)*0.25).toFixed(2) }));
+
+  const m4_double_days = years.map((y,i)=>{
+    const base = Math.max(0, Math.round(4 + 0.35*i + 3*Math.sin(i/3) + (Math.random()-0.5)*4));
+    return { year:y, value: base };
+  });
+
+  const m5_actions = [
+    { action:"Grün-/Blau-Infrastruktur", heat:2, air:1 },
+    { action:"Entsiegelung & helle Oberflächen", heat:2, air:1 },
+    { action:"Hitzeschutz in Gebäuden (passiv)", heat:2, air:1 },
+    { action:"Verkehrsreduktion / aktive Mobilität", heat:1, air:2 },
+    { action:"ÖV/Flottenumstellung", heat:1, air:2 },
+  ];
+
+  const m6_facts = [
+    { title:"Wien – Hitzeschutz & kühle Orte", value:"Cool Spots / Trinkbrunnen / Beschattung", sub:"Beispiel: Maßnahmenbündel gegen Hitzestress." },
+    { title:"Graz – Stadtgrün & Entsiegelung", value:"Bäume, Grünachsen, Entsiegelungsprojekte", sub:"Beispiel: Mikroklima verbessern." },
+    { title:"Linz – Mobilität & Emissionen", value:"Verkehrsmaßnahmen, Flottenmodernisierung", sub:"Beispiel: NO₂/PM runter, weniger Abwärme." },
+    { title:"Innsbruck – Talinversion & Luft", value:"Winterepisoden adressieren (Verkehr/Heizen)", sub:"Beispiel: Topografie + Maßnahmenmix." },
+  ];
+
+  d3.select("#lastUpdated").text("Datenstand: " + new Date().toLocaleString("de-AT"));
+
+  // --------------------------
+  // KPI MODULE 1
+  // --------------------------
+  const pm25Last = last(pm25_annual).value;
+  const no2TrafficLast = last(no2_traffic).value; // declared ONCE
+  const o3DaysLast = last(o3_episode_days).value;
+  const doubleLast = last(m4_double_days).value;
+
+  const kpis = [
+    { label:"PM₂.₅ (Jahresmittel)", value: pm25Last + " µg/m³", note:"Langfristige Belastung (Mock)" },
+    { label:"NO₂ Verkehr (Jahresmittel)", value: no2TrafficLast + " µg/m³", note:"Verkehrsnähe (Mock)" },
+    { label:"O₃ Episoden-Tage", value: o3DaysLast + " Tage", note:"Sommer-Episoden (Mock)" },
+    { label:"Doppelbelastung (heiß + O₃)", value: doubleLast + " Tage", note:"Kombinierter Stressor (Mock)" },
+  ];
+
+  d3.select("#kpis").selectAll("div.kpi")
+    .data(kpis)
+    .enter().append("div").attr("class","kpi")
+    .html(d => `
+      <div class="label">${d.label}</div>
+      <div class="value">${d.value}</div>
+      <div class="note">${d.note}</div>
+    `);
+
+  // --------------------------
+  // D3 helpers
+  // --------------------------
+  function styleAxis(g){
+    g.selectAll("text").attr("fill","rgba(230,237,243,0.7)");
+    g.selectAll("path,line").attr("stroke","rgba(154,164,178,0.35)");
+  }
+  function clearAndSize(container){
+    const el = d3.select(container);
+    el.selectAll("svg").remove();
+    return { el, w: el.node().clientWidth, h: el.node().clientHeight };
+  }
+  function lineChart(container, seriesList, opts){
+    const { el, w, h } = clearAndSize(container);
+    const margin = { top: 18, right: 18, bottom: 34, left: 46 };
+    const iw = w - margin.left - margin.right;
+    const ih = h - margin.top - margin.bottom;
+
+    const svg = el.append("svg").attr("width", w).attr("height", h);
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear().domain(d3.extent(years)).range([0, iw]);
+    const allValues = seriesList.flatMap(s => s.values.map(d=>d.value));
+    const y = d3.scaleLinear().domain([0, d3.max(allValues)*1.15]).nice().range([ih, 0]);
+
+    styleAxis(g.append("g").attr("transform", `translate(0,${ih})`)
+      .call(d3.axisBottom(x).ticks(6).tickFormat(d3.format("d"))));
+    styleAxis(g.append("g").call(d3.axisLeft(y).ticks(5)));
+
+    if (opts?.refLine != null){
+      g.append("line").attr("x1",0).attr("x2",iw)
+        .attr("y1", y(opts.refLine)).attr("y2", y(opts.refLine))
+        .attr("stroke","rgba(255,204,102,0.65)").attr("stroke-dasharray","6 6");
+      g.append("text").attr("x",0).attr("y", y(opts.refLine)-6)
+        .attr("fill","rgba(255,204,102,0.9)").attr("font-size",11)
+        .text(opts.refLabel || "Referenz");
+    }
+
+    const line = d3.line().x(d=>x(d.year)).y(d=>y(d.value));
+    seriesList.forEach((s, idx) => {
+      const stroke = idx === 0 ? "rgba(74,163,255,0.95)" : "rgba(86,243,154,0.85)";
+      g.append("path").datum(s.values).attr("fill","none").attr("stroke",stroke).attr("stroke-width",2).attr("d", line);
+      g.append("text").attr("x",iw).attr("y", y(last(s.values).value)).attr("dx",-2).attr("dy",-6)
+        .attr("text-anchor","end").attr("fill",stroke).attr("font-size",11).text(s.name);
+    });
+
+    g.append("text").attr("x",0).attr("y",-4).attr("fill","rgba(154,164,178,0.9)")
+      .attr("font-size",11).text(opts?.subtitle || "");
+  }
+
+  function barChart(container, values, opts){
+    const { el, w, h } = clearAndSize(container);
+    const margin = { top: 18, right: 18, bottom: 34, left: 46 };
+    const iw = w - margin.left - margin.right;
+    const ih = h - margin.top - margin.bottom;
+
+    const svg = el.append("svg").attr("width", w).attr("height", h);
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleBand().domain(values.map(d=>d.year)).range([0, iw]).padding(0.2);
+    const y = d3.scaleLinear().domain([0, d3.max(values, d=>d.value)*1.15]).nice().range([ih, 0]);
+
+    styleAxis(g.append("g").attr("transform", `translate(0,${ih})`)
+      .call(d3.axisBottom(x).tickValues(values.filter((d,i)=>i%4===0).map(d=>d.year)).tickFormat(d3.format("d"))));
+    styleAxis(g.append("g").call(d3.axisLeft(y).ticks(5)));
+
+    if (opts?.refLine != null){
+      g.append("line").attr("x1",0).attr("x2",iw)
+        .attr("y1", y(opts.refLine)).attr("y2", y(opts.refLine))
+        .attr("stroke","rgba(255,204,102,0.65)").attr("stroke-dasharray","6 6");
+      g.append("text").attr("x",0).attr("y", y(opts.refLine)-6)
+        .attr("fill","rgba(255,204,102,0.9)").attr("font-size",11)
+        .text(opts.refLabel || "Referenz");
+    }
+
+    g.selectAll("rect").data(values).enter().append("rect")
+      .attr("x", d=>x(d.year)).attr("y", d=>y(d.value))
+      .attr("width", x.bandwidth()).attr("height", d=>ih - y(d.value))
+      .attr("fill","rgba(74,163,255,0.55)").attr("stroke","rgba(74,163,255,0.9)");
+
+    g.append("text").attr("x",0).attr("y",-4).attr("fill","rgba(154,164,178,0.9)")
+      .attr("font-size",11).text(opts?.subtitle || "");
+  }
+
+  function scatterChart(container, points, opts){
+    const { el, w, h } = clearAndSize(container);
+    const margin = { top: 18, right: 18, bottom: 34, left: 46 };
+    const iw = w - margin.left - margin.right;
+    const ih = h - margin.top - margin.bottom;
+
+    const svg = el.append("svg").attr("width", w).attr("height", h);
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear().domain(d3.extent(points, d=>d.tmax)).nice().range([0, iw]);
+    const y = d3.scaleLinear().domain(d3.extent(points, d=>d.o3)).nice().range([ih, 0]);
+
+    styleAxis(g.append("g").attr("transform", `translate(0,${ih})`).call(d3.axisBottom(x).ticks(6)));
+    styleAxis(g.append("g").call(d3.axisLeft(y).ticks(5)));
+
+    // regression
+    const meanX = d3.mean(points, d=>d.tmax);
+    const meanY = d3.mean(points, d=>d.o3);
+    let num=0, den=0;
+    for (const p of points){ num += (p.tmax-meanX)*(p.o3-meanY); den += (p.tmax-meanX)**2; }
+    const slope = den===0 ? 0 : num/den;
+    const intercept = meanY - slope*meanX;
+
+    const xLine = d3.extent(points, d=>d.tmax);
+    const linePts = [
+      { tmax:xLine[0], o3: slope*xLine[0] + intercept },
+      { tmax:xLine[1], o3: slope*xLine[1] + intercept },
+    ];
+
+    g.append("path").datum(linePts).attr("fill","none")
+      .attr("stroke","rgba(255,204,102,0.85)").attr("stroke-width",2)
+      .attr("d", d3.line().x(d=>x(d.tmax)).y(d=>y(d.o3)));
+
+    g.selectAll("circle").data(points).enter().append("circle")
+      .attr("cx", d=>x(d.tmax)).attr("cy", d=>y(d.o3)).attr("r",3)
+      .attr("fill","rgba(74,163,255,0.55)").attr("stroke","rgba(74,163,255,0.9)");
+
+    g.append("text").attr("x",0).attr("y",-4).attr("fill","rgba(154,164,178,0.9)")
+      .attr("font-size",11).text(opts?.subtitle || "");
+  }
+
+  function cobenefitChart(container, actions){
+    const { el, w, h } = clearAndSize(container);
+    const margin = { top: 18, right: 18, bottom: 34, left: 210 };
+    const iw = w - margin.left - margin.right;
+    const ih = h - margin.top - margin.bottom;
+
+    const svg = el.append("svg").attr("width", w).attr("height", h);
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const y = d3.scaleBand().domain(actions.map(d=>d.action)).range([0, ih]).padding(0.22);
+    const x = d3.scaleBand().domain(["Hitze", "Luft"]).range([0, iw]).padding(0.25);
+
+    styleAxis(g.append("g").call(d3.axisTop(x).tickSizeOuter(0)));
+    styleAxis(g.append("g").call(d3.axisLeft(y).tickSizeOuter(0)));
+
+    const cells = [];
+    actions.forEach(a=>{
+      cells.push({ action:a.action, dim:"Hitze", score:a.heat });
+      cells.push({ action:a.action, dim:"Luft", score:a.air });
+    });
+
+    const scoreToFill = s => s===2 ? "rgba(86,243,154,0.55)" : s===1 ? "rgba(255,204,102,0.50)" : "rgba(255,107,107,0.40)";
+    const scoreToStroke = s => s===2 ? "rgba(86,243,154,0.9)" : s===1 ? "rgba(255,204,102,0.85)" : "rgba(255,107,107,0.8)";
+    const scoreToLabel = s => s===2 ? "hoch" : s===1 ? "mittel" : "niedrig";
+
+    g.selectAll("rect").data(cells).enter().append("rect")
+      .attr("x", d=>x(d.dim)).attr("y", d=>y(d.action))
+      .attr("width", x.bandwidth()).attr("height", y.bandwidth())
+      .attr("rx",8).attr("ry",8)
+      .attr("fill", d=>scoreToFill(d.score))
+      .attr("stroke", d=>scoreToStroke(d.score));
+
+    g.selectAll("text.cell").data(cells).enter().append("text")
+      .attr("x", d=>x(d.dim)+x.bandwidth()/2)
+      .attr("y", d=>y(d.action)+y.bandwidth()/2+4)
+      .attr("text-anchor","middle")
+      .attr("font-size",11)
+      .attr("fill","rgba(230,237,243,0.9)")
+      .text(d=>scoreToLabel(d.score));
+
+    g.append("text").attr("x",0).attr("y",-8).attr("fill","rgba(154,164,178,0.9)").attr("font-size",11)
+      .text("Qualitative Einordnung (Mock) – als evidenzbasierte Matrix versionieren.");
+  }
+
+  // --------------------------
+  // Takeaways + big numbers (uses no2TrafficLast without redeclaring)
+  // --------------------------
+  // Module 2
+  const xs = m2_pairs.map(d=>d.tmax), ys = m2_pairs.map(d=>d.o3);
+  const mx = d3.mean(xs), my = d3.mean(ys);
+  let num=0, den=0;
+  for (let i=0;i<m2_pairs.length;i++){ num += (xs[i]-mx)*(ys[i]-my); den += (xs[i]-mx)*(xs[i]-mx); }
+  const slopeApprox = den===0 ? 0 : num/den;
+
+  d3.select("#m2Big").text("+" + slopeApprox.toFixed(1) + " µg/m³ pro °C");
+  d3.select("#m2Takeaway").text("Im Sommer steigen Ozon-Maxima typischerweise mit hohen Temperaturen (hier als einfacher Zusammenhang visualisiert).");
+
+  // Module 3
+  const tnCityLast = last(m3_tropical_nights_city).value;
+  const tnRuralLast = last(m3_tropical_nights_rural).value;
+  const deltaLast = last(m3_uhi_delta).value;
+  d3.select("#m3Takeaway").text(`Letztes Jahr (Mock): Tropennächte Stadt ${tnCityLast} vs. Umland ${tnRuralLast} · nächtliche UHI-Differenz ≈ ${deltaLast}°C.`);
+
+  // Module 4
+  d3.select("#m4Big").text(last(m4_double_days).value + " Tage");
+  d3.select("#m4Takeaway").text("Doppelbelastung ist kommunikativ stark: an manchen Tagen treffen Hitze und hohe Ozonwerte zusammen.");
+
+  // Air sections
+  d3.select("#pm25Big").text(pm25Last + " µg/m³");
+  d3.select("#pm25Takeaway").text(`Langfristiger Trend (Mock): −${(pm25_annual[0].value - pm25Last).toFixed(1)} µg/m³ seit ${years[0]}.`);
+
+  const no2BackLast = last(no2_background).value;
+  d3.select("#no2Big").text(no2TrafficLast + " µg/m³");
+  d3.select("#no2Takeaway").text(`Verkehr bleibt höher (Mock): Δ ≈ ${(no2TrafficLast - no2BackLast).toFixed(1)} µg/m³ im letzten Jahr.`);
+
+  d3.select("#o3Big").text(last(o3_episode_days).value + " Tage");
+  d3.select("#o3Takeaway").text("Ozon zeigt starke Jahr-zu-Jahr-Schwankungen (Wetterlage dominiert) – plus Hitze-Kopplung.");
+
+  d3.select("#pm10Big").text(last(pm10_high_days).value + " Tage");
+  d3.select("#pm10Takeaway").text("PM₁₀-Episoden hängen stark an Meteorologie (Inversion), Emissionen und Ferntransport.");
+
+  // Module 5
+  d3.select("#m5Takeaway").text("Anpassung wirkt am besten als Paket: Stadtgrün + Hitzeschutz + Emissionen senken → weniger Belastung, mehr Resilienz.");
+
+  // Module 6
+  d3.select("#m6Facts").selectAll("div.factCard")
+    .data(m6_facts)
+    .enter().append("div")
+    .attr("class","factCard")
+    .html(d => `
+      <div class="t">${d.title}</div>
+      <div class="v">${d.value}</div>
+      <div class="s">${d.sub}</div>
+    `);
+
+  // --------------------------
+  // Render charts
+  // --------------------------
+  function renderAll(){
+    scatterChart("#m2Scatter", m2_pairs, { subtitle:"Sommer: Tmax vs. O₃ Tagesmaximum (Mock) + Trendlinie" });
+
+    lineChart("#m3TropicalNights", [
+      { name:"Stadt", values: m3_tropical_nights_city },
+      { name:"Umland", values: m3_tropical_nights_rural },
+    ], { subtitle:"Tropennächte pro Jahr (Mock)" });
+
+    lineChart("#m3UhiDelta", [
+      { name:"ΔT Nacht (Stadt–Umland)", values: m3_uhi_delta },
+    ], { subtitle:"UHI-Indikator (Mock)", refLine: 1.5, refLabel:"Beispiel-Referenz" });
+
+    barChart("#m4Bars", m4_double_days, { subtitle:"Tage/Jahr: heiß & O₃ hoch (Mock)" });
+
+    lineChart("#pm25Chart", [{ name:"PM₂.₅", values: pm25_annual }],
+      { subtitle:"Jahresmittel (Mock)", refLine: 10, refLabel:"EU 2030: 10 µg/m³ (Kontext)" });
+
+    lineChart("#no2Chart", [
+      { name:"Verkehr", values: no2_traffic },
+      { name:"Hintergrund", values: no2_background }
+    ], { subtitle:"Jahresmittel (Mock)", refLine: 20, refLabel:"EU 2030: 20 µg/m³ (Kontext)" });
+
+    barChart("#o3Chart", o3_episode_days, { subtitle:"Episoden-Tage/Jahr (Mock)" });
+
+    barChart("#pm10Chart", pm10_high_days,
+      { subtitle:"Tage/Jahr (Mock)", refLine: 35, refLabel:"EU heute: 35 Tage (Kontext)" });
+
+    cobenefitChart("#m5Cobenefits", m5_actions);
+  }
+
+  renderAll();
+  window.addEventListener("resize", renderAll);
+</script>
+</body>
+</html>

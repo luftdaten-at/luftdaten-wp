@@ -1,0 +1,17 @@
+.luftdaten-kpis-block {
+    padding: 20px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+}
+
+.luftdaten-kpis-preview h2 {
+    margin-top: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.luftdaten-kpis-preview p {
+    color: #666;
+    font-size: 14px;
+}
+

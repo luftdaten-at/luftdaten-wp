@@ -1,0 +1,34 @@
+{
+  "name": "luftdaten-wp-theme",
+  "version": "1.0.0",
+  "description": "WordPress theme for Luftdaten.at with custom Gutenberg blocks",
+  "author": "Luftdaten.at",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "wordpress",
+    "theme",
+    "gutenberg",
+    "blocks",
+    "luftdaten"
+  ],
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "packages-update": "wp-scripts packages-update",
+    "lint:js": "wp-scripts lint-js",
+    "lint:css": "wp-scripts lint-style",
+    "format:js": "wp-scripts format",
+    "format:css": "wp-scripts format-style"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^27.0.0"
+  },
+  "dependencies": {},
+  "browserslist": [
+    "extends @wordpress/browserslist-config"
+  ],
+  "config": {
+    "WP_THEME_DIR": ".",
+    "WP_BLOCKS_DIR": "./src/blocks"
+  }
+}

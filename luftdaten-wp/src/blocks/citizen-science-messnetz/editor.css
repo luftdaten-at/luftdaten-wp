@@ -1,0 +1,12 @@
+.luftdaten-citizen-science-messnetz-block {
+    padding: 20px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+}
+
+.luftdaten-citizen-science-messnetz-preview h2 {
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+

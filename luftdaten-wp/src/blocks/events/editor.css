@@ -1,0 +1,17 @@
+.luftdaten-events-block {
+    padding: 20px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+}
+
+.luftdaten-events-preview h3 {
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.luftdaten-events-preview p {
+    color: #666;
+    font-size: 14px;
+}
+

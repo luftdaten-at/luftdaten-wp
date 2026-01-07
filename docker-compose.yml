@@ -30,7 +30,18 @@ services:
     networks:
       - wordpress-network
     ports:
-      - "8080:80"
+      - "80:80"
+
+  node:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - ./luftdaten-wp:/app
+    networks:
+      - wordpress-network
+    command: tail -f /dev/null
+    profiles:
+      - build
 
 volumes:
   db_data:

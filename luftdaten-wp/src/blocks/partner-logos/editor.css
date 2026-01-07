@@ -1,0 +1,17 @@
+.luftdaten-partner-logos-block {
+    padding: 20px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+}
+
+.luftdaten-partner-logos-preview h3 {
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.luftdaten-partner-logos-preview p {
+    color: #666;
+    font-size: 14px;
+}
+

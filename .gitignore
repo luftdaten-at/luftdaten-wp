@@ -1,9 +1,30 @@
-# Docker
-.env
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/backup-db/
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+wp-content/cache/
+wp-content/debug.log
 
-# OS
-.DS_Store
-Thumbs.db
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build outputs
+build/
+dist/
+*.min.js
+*.min.css
+
+# Environment
+.env
+.wp-env.json
+.wp-env.override.json
 
 # IDE
 .vscode/
@@ -11,4 +32,12 @@ Thumbs.db
 *.swp
 *.swo
 *~
+.old/
 
+# OS
+.DS_Store
+Thumbs.db
+
+# WordPress specific
+*.log
+.sass-cache/

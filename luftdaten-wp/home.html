@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Luftdaten.at – Wir machen Klimawandelanpassung messbar</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+
+<body>
+  <!-- Top Navigation Header -->
+  <header class="top-header" role="banner">
+    <div class="nav-container">
+      <a href="/" class="nav-logo" aria-label="Luftdaten.at Startseite">
+        Luftdaten.at
+      </a>
+      <nav class="nav-menu" id="mainNav" role="navigation" aria-label="Hauptnavigation">
+        <ul>
+          <li><a href="#dashboard" class="active">Dashboard</a></li>
+          <li><a href="/luftqualitaet/">Luftqualität & Hitze</a></li>
+          <li><a href="/projekte/">Projekte</a></li>
+          <li><a href="/bildung/">Bildung</a></li>
+          <li><a href="/ueber-uns/">Über uns</a></li>
+          <li class="nav-cta"><a href="/kontakt/">Kontakt</a></li>
+        </ul>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menü öffnen/schließen" aria-expanded="false" aria-controls="mainNav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <header class="dashboard-header">
+      <div class="title">
+        <h1>Luftqualität, Hitzeinsel & Klimawandelanpassung in Österreich</h1>
+        <div class="sub">
+          .
+        </div>
+      </div>
+      <div class="meta">
+        <div id="lastUpdated">Datenstand: —</div>
+        <div class="pill">Modus: Mock-Daten (API später)</div>
+      </div>
+    </header>
+
+    <div class="intro-section">
+      <h2>Wir machen Klimawandelanpassung messbar</h2>
+      <p>Luftdaten.at ist eine unabhängige österreichische Forschungs- und Umweltorganisation mit einem starken Fokus auf Citizen Science. Unser Ziel ist, dass Bürger:innen selbstständig ihre persönliche Umwelt beforschen können und Faktoren wie Luftqualität oder Hitze sichtbar machen. Hitze und schlechte Luftqualität sind zentrale Herausforderungen des Klimawandels – wir liefern konkrete Daten und Lösungen, um Städte und Arbeitsplätze zukunftsfit zu machen.</p>
+    </div>
+
+    <div class="bullets">
+      <ul>
+        <li><b>Luftqualität</b>: Langfristige Belastung (PM₂.₅) vs. Episoden (O₃, PM₁₀). <span>Hier: Trends & Episodentage.</span></li>
+        <li><b>Hitze/UHI</b>: Städte kühlen nachts schlechter aus. <span>Hier: Tropennächte & Stadt–Umland-Differenz.</span></li>
+        <li><b>Anpassung</b>: Maßnahmen können Hitze <i>und</i> Exposition gegenüber Luftschadstoffen senken. <span>Hier: Co-Benefits & Praxisbeispiele.</span></li>
+      </ul>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 2 — Ozon folgt der Hitze</h2>
+        <div class="takeaway" id="m2Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="m2Big">—</div>
+            <div class="desc">
+              Beispielmetrik: Zusammenhang Sommer-Tage (Tmax) ↔ Tagesmaximum O₃.
+              In Produktion: definieren (Sommerhalbjahr, Schwellen, Stations-/Regionalaggregation).
+            </div>
+          </div>
+          <div class="chart" id="m2Scatter"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: Ozon (UBA/EEA) + Temperatur (GeoSphere) — im Wireframe nicht live geladen.</div>
+          <div class="pill">x: Tmax (°C) · y: O₃ max (µg/m³)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 3 — Urban Heat Island: Nächte werden zum Problem</h2>
+        <div class="takeaway" id="m3Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="grid2">
+          <div>
+            <div class="pill">Tropennächte</div>
+            <div class="chart small" id="m3TropicalNights"></div>
+          </div>
+          <div>
+            <div class="pill">UHI-Indikator</div>
+            <div class="chart small" id="m3UhiDelta"></div>
+          </div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: GeoSphere (Stations-/Indexdaten) — im Wireframe Mock.</div>
+          <div class="pill">Tropennächte: Tmin ≥ 20°C (Beispiel)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 4 — Doppelbelastung: Hitze + hohe Luftbelastung</h2>
+        <div class="takeaway" id="m4Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="m4Big">—</div>
+            <div class="desc">
+              Anzahl Tage pro Jahr, an denen „heiß“ <b>und</b> „Ozon hoch“ gleichzeitig auftreten.
+              In Produktion: Schwellen sauber dokumentieren.
+            </div>
+          </div>
+          <div class="chart" id="m4Bars"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: GeoSphere (Tmax) + UBA/EEA (O₃) — Wireframe Mock.</div>
+          <div class="pill">Einheit: Tage/Jahr</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>PM₂.₅ — Jahresmittel (Trend)</h2>
+        <div class="takeaway" id="pm25Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="pm25Big">—</div>
+            <div class="desc">
+              Jahresmittelwert (vereinfachte Aggregation) – im Wireframe über Messnetz gemittelt.
+              In Produktion: stations- vs. bevölkerungsgewichtet entscheiden.
+            </div>
+          </div>
+          <div class="chart" id="pm25Chart"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: UBA/EEA — Wireframe Mock.</div>
+          <div class="pill">Einheit: µg/m³</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>NO₂ — Verkehr vs. Hintergrund (Trend)</h2>
+        <div class="takeaway" id="no2Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="no2Big">—</div>
+            <div class="desc">
+              Vergleich zweier Stationsklassen (Verkehr/Hintergrund).
+              In Produktion: Stationsklassifikation aus Metadaten übernehmen.
+            </div>
+          </div>
+          <div class="chart" id="no2Chart"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: UBA/EEA — Wireframe Mock.</div>
+          <div class="pill">Einheit: µg/m³</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Ozon (O₃) — Episoden-Tage pro Jahr</h2>
+        <div class="takeaway" id="o3Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="o3Big">—</div>
+            <div class="desc">
+              Anzahl Tage pro Jahr über einer definierten Schwelle (Beispielmetrik).
+              In Produktion: Schwelle/Definition exakt angeben.
+            </div>
+          </div>
+          <div class="chart" id="o3Chart"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: UBA Ozonmessungen — Wireframe Mock.</div>
+          <div class="pill">Einheit: Tage/Jahr</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>PM₁₀ — Tage mit erhöhten Tagesmitteln</h2>
+        <div class="takeaway" id="pm10Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key figure</div>
+            <div class="num" id="pm10Big">—</div>
+            <div class="desc">
+              Episodentage sind leicht verständlich.
+              In Produktion: Grenzwert und zulässige Überschreitungen klar nennen.
+            </div>
+          </div>
+          <div class="chart" id="pm10Chart"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: UBA — Wireframe Mock.</div>
+          <div class="pill">Einheit: Tage/Jahr</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 5 — Klimawandelanpassung mit Co-Benefits für Luft & Hitze</h2>
+        <div class="takeaway" id="m5Takeaway">—</div>
+      </div>
+      <div class="sectionBody">
+        <div class="bigNumberRow">
+          <div class="bigNumber">
+            <div class="pill">Key idea</div>
+            <div class="num">„Doppelnutzen“</div>
+            <div class="desc">
+              Viele Anpassungsmaßnahmen senken Hitzeexposition und können Luftqualität indirekt verbessern.
+              Im Dashboard als qualitative Einordnung (nicht als Messwert).
+            </div>
+          </div>
+          <div class="chart" id="m5Cobenefits"></div>
+        </div>
+        <div class="sourceLine">
+          <div>Quelle: Anpassungsstrategie / Hitzeschutz & Fachliteratur — Wireframe Mock.</div>
+          <div class="pill">Skala: niedrig · mittel · hoch (qualitativ)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sectionHead">
+        <h2>Modul 6 — Was Städte bereits tun (Beispiele)</h2>
+        <div class="takeaway">Kurz & konkret: Maßnahmen sind sichtbar und verständlich (Facts statt komplexer Grafiken).</div>
+      </div>
+      <div class="sectionBody">
+        <div class="factsGrid" id="m6Facts"></div>
+        <div class="sourceLine">
+          <div>Quelle: Stadtprogramme/Klimaanpassungspläne — im Wireframe Beispieltext.</div>
+          <div class="pill">Format: Facts / Links / Zuständigkeit</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Unsere Angebote Section -->
+    <section class="services-section" aria-label="Unsere Angebote">
+      <h3>Unsere Angebote</h3>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">📊</div>
+          <h4 class="service-title">Daten & Monitoring</h4>
+          <p class="service-description">Echtzeitdaten zur Luftqualität und Hitze in österreichischen Städten. Zugriff auf historische Daten und Analysen.</p>
+          <a href="/daten/" class="service-link">Zum Dashboard →</a>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🔬</div>
+          <h4 class="service-title">Citizen Science Projekte</h4>
+          <p class="service-description">Mitmachen bei Forschungsprojekten: Bauen Sie eigene Messstationen und tragen Sie zu wissenschaftlichen Erkenntnissen bei.</p>
+          <a href="/citizen-science/" class="service-link">Mehr erfahren →</a>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🎓</div>
+          <h4 class="service-title">Workshops & Bildung</h4>
+          <p class="service-description">Praktische Workshops, Vorträge und Bildungsangebote zu Luftqualität, Hitzeinseln und Klimawandelanpassung.</p>
+          <a href="/bildung/" class="service-link">Angebote ansehen →</a>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🏢</div>
+          <h4 class="service-title">Beratung & Forschung</h4>
+          <p class="service-description">Wissenschaftliche Beratung für Städte, Gemeinden und Unternehmen bei Klimawandelanpassungsmaßnahmen.</p>
+          <a href="/projekte/" class="service-link">Kontakt aufnehmen →</a>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">📱</div>
+          <h4 class="service-title">Tools & APIs</h4>
+          <p class="service-description">Zugang zu Daten-APIs, Visualisierungstools und Anwendungen für die Analyse von Umweltdaten.</p>
+          <a href="/tools/" class="service-link">Tools entdecken →</a>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🤝</div>
+          <h4 class="service-title">Kooperationen</h4>
+          <p class="service-description">Gemeinsame Projekte mit Forschungseinrichtungen, NGOs und öffentlichen Institutionen entwickeln.</p>
+          <a href="/kontakt/" class="service-link">Kontakt aufnehmen →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Next Events Section -->
+    <section class="events-section" aria-label="Nächste Veranstaltungen">
+      <h3>Nächste Veranstaltungen</h3>
+      <div class="events-list" id="eventsList">
+        <div class="event-card">
+          <div class="event-date">
+            <div class="event-day">15</div>
+            <div class="event-month">Jan</div>
+            <div class="event-year">2025</div>
+          </div>
+          <div class="event-content">
+            <h4 class="event-title">Workshop: Luftqualität messen & verstehen</h4>
+            <div class="event-meta">
+              <span class="event-location">📍 Wien, Hauptbücherei</span>
+              <span class="event-time">🕐 14:00–17:00 Uhr</span>
+            </div>
+            <p class="event-description">Praktischer Workshop zum Aufbau eigener Messstationen und Interpretation von Luftqualitätsdaten.</p>
+            <a href="/events/luftqualitaet-workshop/" class="event-link">Mehr erfahren →</a>
+          </div>
+        </div>
+        <div class="event-card">
+          <div class="event-date">
+            <div class="event-day">28</div>
+            <div class="event-month">Feb</div>
+            <div class="event-year">2025</div>
+          </div>
+          <div class="event-content">
+            <h4 class="event-title">Vortrag: Hitzeinseln in österreichischen Städten</h4>
+            <div class="event-meta">
+              <span class="event-location">📍 Graz, TU Graz</span>
+              <span class="event-time">🕐 18:00–19:30 Uhr</span>
+            </div>
+            <p class="event-description">Vortrag zu aktuellen Forschungsergebnissen und Maßnahmen gegen städtische Hitzeinseln.</p>
+            <a href="/events/hitzeinseln-vortrag/" class="event-link">Mehr erfahren →</a>
+          </div>
+        </div>
+        <div class="event-card">
+          <div class="event-date">
+            <div class="event-day">12</div>
+            <div class="event-month">Mär</div>
+            <div class="event-year">2025</div>
+          </div>
+          <div class="event-content">
+            <h4 class="event-title">Citizen Science Tag: Messen für besseres Klima</h4>
+            <div class="event-meta">
+              <span class="event-location">📍 Online & bundesweit</span>
+              <span class="event-time">🕐 10:00–16:00 Uhr</span>
+            </div>
+            <p class="event-description">Gemeinsamer Aktionstag für alle, die sich an Citizen Science-Projekten beteiligen möchten.</p>
+            <a href="/events/citizen-science-tag/" class="event-link">Mehr erfahren →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Partner Logos Section -->
+    <section class="partners-section" aria-label="Partner und Förderer">
+      <h3>Partner & Förderer</h3>
+      <div class="partners-grid">
+        <div class="partner-logo">
+          <div class="partner-logo-placeholder">Partner Logo</div>
+        </div>
+        <div class="partner-logo">
+          <div class="partner-logo-placeholder">Partner Logo</div>
+        </div>
+        <div class="partner-logo">
+          <div class="partner-logo-placeholder">Partner Logo</div>
+        </div>
+        <div class="partner-logo">
+          <div class="partner-logo-placeholder">Partner Logo</div>
+        </div>
+        <!-- Add actual partner logos here as needed:
+        <a href="#" class="partner-logo" aria-label="Partner Name">
+          <img src="/path/to/logo.png" alt="Partner Name Logo" />
+        </a>
+        -->
+      </div>
+    </section>
+
+    <!-- Site Footer -->
+    <footer class="site-footer" role="contentinfo">
+      <div class="footer-container">
+        <div class="footer-content">
+          <div class="footer-col">
+            <h4>Luftdaten.at</h4>
+            <p>Eine unabhängige österreichische Forschungs- und Umweltorganisation mit Fokus auf Citizen Science. Wir machen Klimawandelanpassung messbar.</p>
+            <div class="footer-social">
+              <a href="https://facebook.com/luftdaten.at/" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" aria-hidden="true">
+                  <path d="M400 32H48A48 48 0 0 0 0 80v352a48 48 0 0 0 48 48h137.25V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.27c-30.81 0-40.42 19.12-40.42 38.73V256h68.78l-11 71.69h-57.78V480H400a48 48 0 0 0 48-48V80a48 48 0 0 0-48-48z"/>
+                </svg>
+              </a>
+              <a href="https://www.instagram.com/luftdaten.at/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" aria-hidden="true">
+                  <path d="M224,202.66A53.34,53.34,0,1,0,277.36,256,53.38,53.38,0,0,0,224,202.66Zm124.71-41a54,54,0,0,0-30.41-30.41c-21-8.29-71-6.43-94.3-6.43s-73.25-1.93-94.31,6.43a54,54,0,0,0-30.41,30.41c-8.28,21-6.43,71.05-6.43,94.33S91,329.26,99.32,350.33a54,54,0,0,0,30.41,30.41c21,8.29,71,6.43,94.31,6.43s73.24,1.93,94.3-6.43a54,54,0,0,0,30.41-30.41c8.35-21,6.43-71.05,6.43-94.33S357.1,182.74,348.75,161.67ZM224,338a82,82,0,1,1,82-82A81.9,81.9,0,0,1,224,338Zm85.38-148.3a19.14,19.14,0,1,1,19.13-19.14A19.1,19.1,0,0,1,309.42,189.74ZM400,32H48A48,48,0,0,0,0,80V432a48,48,0,0,0,48,48H400a48,48,0,0,0,48-48V80A48,48,0,0,0,400,32ZM382.88,322c-1.29,25.63-7.14,48.34-25.85,67s-41.4,24.63-67,25.85c-26.41,1.49-105.59,1.49-132,0-25.63-1.29-48.26-7.15-67-25.85s-24.63-41.42-25.85-67c-1.49-26.42-1.49-105.61,0-132,1.29-25.63,7.07-48.34,25.85-67s41.47-24.56,67-25.78c26.41-1.49,105.59-1.49,132,0,25.63,1.29,48.33,7.15,67,25.85s24.63,41.42,25.85,67.05C384.37,216.44,384.37,295.56,382.88,322Z"/>
+                </svg>
+              </a>
+              <a href="https://github.com/luftdaten-at" aria-label="GitHub" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" aria-hidden="true">
+                  <path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="footer-col">
+            <h4>Navigation</h4>
+            <nav aria-label="Footer Navigation">
+              <ul class="footer-nav">
+                <li><a href="/luftqualitaet/">Luftqualität & Hitze</a></li>
+                <li><a href="/projekte/">Projekte</a></li>
+                <li><a href="/bildung/">Bildung</a></li>
+                <li><a href="/ueber-uns/">Über uns</a></li>
+              </ul>
+            </nav>
+          </div>
+          <div class="footer-col">
+            <h4>Kontakt</h4>
+            <nav aria-label="Kontakt und Informationen">
+              <ul class="footer-nav">
+                <li><a href="/kontakt/">Kontakt</a></li>
+                <li><a href="/unterstuetzen/">Mitmachen</a></li>
+                <li><a href="/ueber-uns/citizen-science/">Citizen Science</a></li>
+                <li><a href="/ueber-uns/team/">Team</a></li>
+              </ul>
+            </nav>
+          </div>
+          <div class="footer-col">
+            <h4>Newsletter</h4>
+            <p>Bleiben Sie informiert über unsere Projekte und Neuigkeiten.</p>
+            <p><a href="/newsletter/">Newsletter abonnieren</a></p>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copyright">
+            <p>&copy; 2025 Luftdaten.at. Alle Rechte vorbehalten.</p>
+          </div>
+          <nav class="footer-legal" aria-label="Rechtliche Informationen">
+            <a href="/impressum/">Impressum</a>
+            <a href="/datenschutz/" rel="privacy-policy">Datenschutz</a>
+            <a href="/kinderschutz/">Kinderschutz</a>
+          </nav>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

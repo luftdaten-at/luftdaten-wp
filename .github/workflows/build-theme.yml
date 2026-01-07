@@ -1,0 +1,109 @@
+name: Build WordPress Theme
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: luftdaten-wp/package-lock.json
+        continue-on-error: true
+      
+      - name: Check for package-lock.json
+        working-directory: ./luftdaten-wp
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "package-lock.json not found, running npm install"
+            npm install
+          else
+            echo "package-lock.json found, running npm ci"
+            npm ci
+          fi
+      
+      - name: Build blocks
+        working-directory: ./luftdaten-wp
+        run: npm run build
+      
+      - name: Extract version from tag
+        if: github.event_name == 'release'
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          # Remove 'v' prefix if present
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+      
+      - name: Update version in style.css
+        if: github.event_name == 'release'
+        working-directory: ./luftdaten-wp
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Update Version line in style.css (Linux sed syntax for GitHub Actions)
+          sed -i "s/Version:.*/Version: $VERSION/" style.css
+          echo "Updated style.css version to $VERSION"
+          # Verify the change
+          grep "Version:" style.css
+      
+      - name: Create theme ZIP
+        working-directory: ./
+        id: create-zip
+        run: |
+          cd luftdaten-wp
+          if [ "${{ github.event_name }}" == "release" ]; then
+            ZIP_NAME="luftdaten-wp-theme-${{ steps.version.outputs.version }}.zip"
+          else
+            ZIP_NAME="luftdaten-wp-theme.zip"
+          fi
+          zip -r "../$ZIP_NAME" . \
+            -x "*.git*" \
+            -x "*node_modules*" \
+            -x "*.DS_Store" \
+            -x "*.gitignore" \
+            -x "*.editorconfig" \
+            -x "*.eslintrc*" \
+            -x "*.prettierrc*" \
+            -x "*.prettierignore" \
+            -x "package-lock.json" \
+            -x "package.json" \
+            -x "README.md" \
+            -x "src/blocks/*/src/*" \
+            -x "src/blocks/*/node_modules/*" \
+            -x ".github/*" \
+            -x "*.log" \
+            -x "home.html"
+          echo "zip_file=$ZIP_NAME" >> $GITHUB_OUTPUT
+      
+      - name: Upload theme ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luftdaten-wp-theme
+          path: ${{ steps.create-zip.outputs.zip_file }}
+          retention-days: 30
+      
+      - name: Upload to GitHub Release
+        if: github.event_name == 'release'
+        run: |
+          ZIP_FILE="${{ steps.create-zip.outputs.zip_file }}"
+          UPLOAD_URL="${{ github.event.release.upload_url }}"
+          UPLOAD_URL="${UPLOAD_URL%\{*}"
+          
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/zip" \
+            --data-binary "@$ZIP_FILE" \
+            "$UPLOAD_URL?name=$ZIP_FILE&label=$ZIP_FILE"

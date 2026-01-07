@@ -1,0 +1,66 @@
+{
+    "metadata": {
+        "title": "Feinstaub PM₂.₅ Jahresmittel",
+        "xLabel": "Jahr",
+        "yLabel": "µg/m³",
+        "source": "Ämter der Landesregierung, Umweltbundesamt",
+        "subtitle": "Jahresmittel",
+        "refLine": 25,
+        "refLabel": "Grenzwert: 25 µg/m³"
+    },
+    "data": [
+        {
+            "name": "PM₂.₅",
+            "values": [
+                {
+                    "year": 2013,
+                    "value": 16.28
+                },
+                {
+                    "year": 2014,
+                    "value": 13.78
+                },
+                {
+                    "year": 2015,
+                    "value": 14.14
+                },
+                {
+                    "year": 2016,
+                    "value": 12.64
+                },
+                {
+                    "year": 2017,
+                    "value": 13.40
+                },
+                {
+                    "year": 2018,
+                    "value": 14.30
+                },
+                {
+                    "year": 2019,
+                    "value": 11.59
+                },
+                {
+                    "year": 2020,
+                    "value": 10.15
+                },
+                {
+                    "year": 2021,
+                    "value": 10.61
+                },
+                {
+                    "year": 2022,
+                    "value": 10.41
+                },
+                {
+                    "year": 2023,
+                    "value": 9.25
+                },
+                {
+                    "year": 2024,
+                    "value": 9.49
+                }
+            ]
+        }
+    ]
+}

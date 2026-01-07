@@ -1,0 +1,14 @@
+.luftdaten-ozon-hitze-block {
+    padding: 20px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+}
+
+.luftdaten-ozon-hitze-preview {
+    margin-top: 20px;
+}
+
+.luftdaten-ozon-hitze-preview .section {
+    margin-top: 0;
+}
+
