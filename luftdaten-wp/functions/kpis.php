@@ -76,6 +76,7 @@ function luftdaten_render_kpis_block($attributes) {
                 $unit = isset($kpi['unit']) ? $kpi['unit'] : '';
                 $trend = isset($kpi['trend']) ? $kpi['trend'] : '';
                 $note = isset($kpi['note']) ? $kpi['note'] : '';
+                $link = isset($kpi['link']) ? $kpi['link'] : '';
                 
                 if (empty($label)) {
                     continue; // Skip KPIs without labels
@@ -89,15 +90,28 @@ function luftdaten_render_kpis_block($attributes) {
                 if (!empty($trend)) {
                     $value_display .= ' ' . $trend;
                 }
-                ?>
-                <div class="kpi">
-                    <div class="label"><?php echo esc_html($label); ?></div>
-                    <div class="value"><?php echo esc_html($value_display); ?></div>
-                    <?php if (!empty($note)) : ?>
-                        <div class="note"><?php echo esc_html($note); ?></div>
-                    <?php endif; ?>
-                </div>
-                <?php
+                
+                // Wrap in link if provided
+                $kpi_content = '';
+                $kpi_content .= '<div class="label">' . esc_html($label) . '</div>';
+                $kpi_content .= '<div class="value">' . esc_html($value_display) . '</div>';
+                if (!empty($note)) {
+                    $kpi_content .= '<div class="note">' . esc_html($note) . '</div>';
+                }
+                
+                if (!empty($link)) {
+                    ?>
+                    <a href="<?php echo esc_url($link); ?>" class="kpi kpi-link">
+                        <?php echo $kpi_content; ?>
+                    </a>
+                    <?php
+                } else {
+                    ?>
+                    <div class="kpi">
+                        <?php echo $kpi_content; ?>
+                    </div>
+                    <?php
+                }
             }
             ?>
         </div>

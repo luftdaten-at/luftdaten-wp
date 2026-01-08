@@ -26,6 +26,7 @@
                         unit: '',
                         trend: '',
                         note: '',
+                        link: '',
                     },
                     {
                         label: __('Messungen heute', 'luftdaten'),
@@ -33,6 +34,7 @@
                         unit: '',
                         trend: '',
                         note: '',
+                        link: '',
                     },
                     {
                         label: __('Durchschnittliche Luftqualität', 'luftdaten'),
@@ -40,6 +42,7 @@
                         unit: '',
                         trend: '',
                         note: '',
+                        link: '',
                     },
                 ],
             },
@@ -66,6 +69,7 @@
                     unit: '',
                     trend: '',
                     note: '',
+                    link: '',
                 });
                 setAttributes({ kpis: newKpis });
             }
@@ -132,6 +136,24 @@
                                             updateKpi(index, 'trend', value);
                                         },
                                         help: __('Optional trend indicator (e.g., ↑, ↓, →)', 'luftdaten')
+                                    }),
+                                    el(TextareaControl, {
+                                        label: __('Note', 'luftdaten'),
+                                        value: kpi.note || '',
+                                        onChange: function(value) {
+                                            updateKpi(index, 'note', value);
+                                        },
+                                        help: __('Optional note displayed below the value', 'luftdaten'),
+                                        rows: 2,
+                                    }),
+                                    el(TextControl, {
+                                        label: __('Link URL', 'luftdaten'),
+                                        value: kpi.link || '',
+                                        onChange: function(value) {
+                                            updateKpi(index, 'link', value);
+                                        },
+                                        help: __('Optional URL to link the KPI card to a page', 'luftdaten'),
+                                        type: 'url',
                                     }),
                                     el(Button, {
                                         isDestructive: true,

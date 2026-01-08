@@ -567,6 +567,15 @@ body{
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
+.kpi-link{
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.kpi-link:hover{
+  text-decoration: none;
+  color: inherit;
+}
 .kpi .label{ color:var(--muted); font-size:12px; }
 .kpi .value{ margin-top:6px; font-size:22px; letter-spacing:.2px; }
 .kpi .note{ margin-top:6px; color:var(--muted); font-size:11px; line-height:1.35; }
