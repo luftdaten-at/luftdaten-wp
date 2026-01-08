@@ -33,6 +33,7 @@ $functions_dir = get_template_directory() . '/functions/';
     'jahresmittel-trend.php',    // Jahresmittel (Trend) block
     'citizen-science-messnetz.php', // Citizen Science Messnetz block
     'city-search.php',           // City Search block
+    'github-updater.php',        // GitHub auto-update functionality
 );
 
 foreach ($functions_files as $file) {
