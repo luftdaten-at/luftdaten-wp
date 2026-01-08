@@ -1596,3 +1596,236 @@ body{
     align-items: center;
   }
 }
+
+/* Table Styles - Matching Grenzwerte page design */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+table thead {
+  background: var(--panel);
+  border-bottom: 2px solid var(--border);
+}
+
+table thead th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid var(--border);
+}
+
+table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+table thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+table tbody tr:last-child {
+  border-bottom: none;
+}
+
+table tbody tr:hover {
+  background-color: var(--panel);
+}
+
+table tbody tr:nth-child(even) {
+  background-color: rgba(249, 250, 251, 0.5);
+}
+
+table tbody tr:nth-child(even):hover {
+  background-color: var(--panel);
+}
+
+table tbody td {
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  vertical-align: top;
+}
+
+table tbody td:first-child {
+  font-weight: 500;
+  color: var(--text);
+}
+
+table tbody td strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Responsive table styles */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    margin: 20px 0;
+  }
+
+  table thead th {
+    padding: 12px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  table tbody td {
+    padding: 10px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* For very small screens, allow horizontal scroll */
+  table {
+    min-width: 100%;
+  }
+
+  /* Optional: Stack table on very small screens if data-label attribute is present */
+  table[data-responsive="stack"] tbody tr {
+    display: block;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--card);
+    border-radius: 8px;
+  }
+
+  table[data-responsive="stack"] tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  table[data-responsive="stack"] tbody td {
+    display: block;
+    padding: 8px 0;
+    border: none;
+    white-space: normal;
+  }
+
+  table[data-responsive="stack"] tbody td:before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+    color: var(--muted);
+    display: inline;
+    font-size: 12px;
+  }
+
+  table[data-responsive="stack"] tbody td:first-child {
+    font-weight: 600;
+    color: var(--text);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table[data-responsive="stack"] tbody td:first-child:before {
+    display: none;
+  }
+}
+
+/* Table within entry content */
+.entry-content table,
+.wp-block-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.entry-content table thead,
+.wp-block-table table thead {
+  background: var(--panel);
+  border-bottom: 2px solid var(--border);
+}
+
+.entry-content table thead th,
+.wp-block-table table thead th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.entry-content table tbody tr,
+.wp-block-table table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.entry-content table tbody tr:last-child,
+.wp-block-table table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.entry-content table tbody tr:hover,
+.wp-block-table table tbody tr:hover {
+  background-color: var(--panel);
+}
+
+.entry-content table tbody tr:nth-child(even),
+.wp-block-table table tbody tr:nth-child(even) {
+  background-color: rgba(249, 250, 251, 0.5);
+}
+
+.entry-content table tbody tr:nth-child(even):hover,
+.wp-block-table table tbody tr:nth-child(even):hover {
+  background-color: var(--panel);
+}
+
+.entry-content table tbody td,
+.wp-block-table table tbody td {
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  vertical-align: top;
+}
+
+/* Table caption styling */
+table caption {
+  caption-side: top;
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+/* Table with source/note below */
+table + p,
+table + .table-source {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+table + .table-source {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
