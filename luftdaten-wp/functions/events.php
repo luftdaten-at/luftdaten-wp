@@ -220,9 +220,9 @@ function luftdaten_render_events_block($attributes) {
 
     $events_query = new WP_Query($args);
 
-    if (!$events_query->have_posts()) {
-        return '<p>' . esc_html__('No upcoming events found.', 'luftdaten') . '</p>';
-    }
+    // if (!$events_query->have_posts()) {
+    //     return '<p>' . esc_html__('No upcoming events found.', 'luftdaten') . '</p>';
+    // }
 
     ob_start();
     ?>
